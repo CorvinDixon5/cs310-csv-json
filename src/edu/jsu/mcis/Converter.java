@@ -67,9 +67,36 @@ public class Converter {
             List<String[]> full = reader.readAll();
             Iterator<String[]> iterator = full.iterator();
             
-            // INSERT YOUR CODE HERE
+            JSONArray rowHeaders = new JSONArray();
+            JSONArray ColHeaders = new JSONArray();
+            JSONArray data = new JSONArray();
+            String[] rows;
+            rows = iterator.next() ;
             
-        }        
+            for (int i=0;i<rows.length;i++){
+                ColHeaders.add(rows[i]);
+                
+            }
+
+            
+            while(iterator.hasNext()){
+            
+                rows = iterator.next() ;
+                rowHeaders.add(rows[0]);
+                JSONArray row = new JSONArray();
+                for (int i=1;i<rows.length;i++){
+                    row.add(Integer.parseInt(rows[i]));
+                    
+            }
+            data.add(row);
+        }  
+            JSONObject json= new JSONObject(); 
+            json.put("colHeaders", ColHeaders);
+            json.put("rowHeaders", rowHeaders);
+            json.put("data", data);
+            results =  json.toJSONString(); 
+        } 
+            
         catch(Exception e) { return e.toString(); }
         
         return results.trim();
@@ -85,9 +112,68 @@ public class Converter {
             StringWriter writer = new StringWriter();
             CSVWriter csvWriter = new CSVWriter(writer, ',', '"', '\n');
             
-            // INSERT YOUR CODE HERE
             
-        }
+            
+            JSONParser parser = new JSONParser();
+            JSONObject json= (JSONObject)parser.parse(jsonString); 
+            
+            
+
+            JSONArray rowHeaders =(JSONArray) json.get("rowHeaders");
+            JSONArray ColHeaders =(JSONArray) json.get("colHeaders");
+            JSONArray data =  (JSONArray) json.get("data");
+            String[] Cols = new String[ColHeaders.size()];
+            
+            String[] Results = new String[data.size()];
+            
+            String[] rowStringArray = new String[rowHeaders.size()];
+            String[] dataStringArray = new String[rowHeaders.size()];
+            
+
+            
+            // Gets the "Colheaders" value and inserts it into string array col//
+            for (int i=0;i<Cols.length; i++){
+                Cols[i] = ColHeaders.get(i).toString();
+                
+            }
+
+            csvWriter.writeNext(Cols);
+            
+             // Finds the first index of "rowheaders" and inserts it into string array row//
+            for (int i=0;i<rowHeaders.size();i++){
+                
+                rowStringArray[i] = rowHeaders.get(i).toString();
+                dataStringArray[i] = data.get(i).toString();
+                
+            }
+            
+            for (int i=0;i<dataStringArray.length;i++){
+                
+                JSONArray dataValues = (JSONArray)parser.parse(dataStringArray[i]);
+                
+                String[] row = new String[dataValues.size() + 1];
+                
+                row[0] = rowStringArray[i];
+                
+                for (int j = 0; j < dataValues.size(); ++j) {
+                    row[j + 1] = dataValues.get(j).toString(); 
+                }
+                
+                csvWriter.writeNext(row);
+                
+            }
+                    
+            
+        
+            
+            
+            
+            System.err.println("Teseting...");
+
+            //csvWriter.writeNext(Results);
+            
+            results = writer.toString();
+        }   
         
         catch(Exception e) { return e.toString(); }
         
